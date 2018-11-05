@@ -1,0 +1,58 @@
+# Job-template to build docker images using docker-in-docker
+#
+# Required template args:
+# - verbose_name
+# - docker_image
+# - build_command
+# - test_command
+
+- job-template:
+    name: "demo.pipeline.{docker_image}"
+    id: build-dind
+    project-type: pipeline
+    description: Build {verbose_name}
+
+    dsl: !j2: |
+      // Jenkins-slave template
+      podTemplate(
+        label: 'dind',
+        containers: [
+          containerTemplate (
+            name: 'docker-dind',
+            image: 'docker:stable-dind',
+            privileged: true,
+            command: '',
+            args: ''
+          ),
+          containerTemplate(
+            name: 'docker-build',
+            image: 'docker:latest',
+            ttyEnabled: true,
+            command: '/bin/sh -c',
+            args:
+              'cat',
+            envVars: [
+              containerEnvVar(
+                key: 'DOCKER_HOST', value: 'tcp://localhost:2375'
+              ),
+            ]
+          ),
+        ]
+      ) {
+        node('dind') {
+
+          stage('Build') {
+            git '{{ repo_url }}'
+            container('docker-build') {
+              sh "{{ build_command }}"
+            }
+          } // end stage Build
+
+          stage('Test') {
+            container('docker-build') {
+              sh "{{ test_command }}"
+            }
+          } // end stage Test
+
+        }
+      }

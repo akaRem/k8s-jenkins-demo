@@ -1,0 +1,39 @@
+# There are some workarounds used in this spec which are ok for demo purposes,
+# but should be changed in real world applications:
+# 1. ServiceType is NodePort
+# 2. Auth is not used
+# 3. Jenkins Image is consumed from cloud
+Master:
+
+  # By default ServiceType is LoadBalancer and it won't work in minikube,
+  # So we replace with something that's supported by our cluster.
+  # This is not production option
+  ServiceType: NodePort
+
+  # Latest Jenkins enforces high security, so even if we specify user/pass in
+  # plaintext, we still won't be able to access API, because we'll need to
+  # retreive API token, and this is hard to do programmatically.
+  UseSecurity: false
+
+  # We are using upstream jenkins/jenkins:lts image, which is not good for
+  # cluster security and reliability, but it's quite ok for Demo.
+  Image: "jenkins/jenkins"
+  ImageTag: "lts"
+
+  # Defaults from https://github.com/helm/charts/tree/master/stable/jenkins
+  # Defaults are fine, but it's  more reliable to have k8s plugin versin
+  # which match our cluster.
+  InstallPlugins:
+  - kubernetes:1.12.0
+  - workflow-aggregator:2.5
+  - credentials-binding:1.16
+  - git:3.9.1
+  - workflow-job:2.23
+
+# Create service account and ClusterRoleBinding for Kubernetes plugin
+rbac:
+  install: true
+
+# We don't need agent to be installed since we are using k8s plugin
+Agent:
+  Enabled: false

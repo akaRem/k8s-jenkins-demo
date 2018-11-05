@@ -1,0 +1,15 @@
+- project:
+    name: demo
+
+    docker_image:
+    - alpine-oraclejdk8:
+        verbose_name: Java8 Container
+        repo_url: https://github.com/akaRem/docker-alpine-oraclejdk8
+        # note: double quotes are not allowed, because they are used in job-template
+        build_command: >-
+          docker build -t alpine-oraclejdk8 .
+        test_command: >-
+          docker run alpine-oraclejdk8 /bin/sh -c 'java -version'
+
+    jobs:
+    - build-dind
