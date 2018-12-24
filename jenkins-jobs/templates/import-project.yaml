@@ -1,0 +1,59 @@
+# Job-template to build docker images using docker-in-docker
+#
+# Required template args:
+# - verbose_name
+# - docker_image
+# - build_command
+# - test_command
+
+- job-template:
+    name: "demo.import.{project_name}"
+    id: import-project
+    project-type: pipeline
+    description: Import {verbose_name}
+    concurrent: true
+
+    dsl: !j2: |
+      // Jenkins-slave template
+      podTemplate(
+        label: 'dind',
+        containers: [
+          containerTemplate(
+            name: 'docker-git',
+            image: 'alpine/git:latest',
+            ttyEnabled: true,
+            command: '/bin/sh -c',
+            args:
+              'cat',
+            envVars: [
+              containerEnvVar(
+                key: 'DOCKER_HOST', value: 'tcp://localhost:2375'
+              ),
+            ]
+          ),
+        ]
+      ) {
+        node('dind') {
+
+          stage('Clone') {
+            git '{{ src_repo_url }}'
+            container('docker-git') {
+              sh "true"
+            }
+          } // end stage Build
+
+          stage('Upload') {
+            container('docker-git') {
+              sh '''
+                #!/bin/bash
+                set -ex
+                git config http.sslVerify false
+                git config user.name root
+                git remote add gitlab "http://{{ gl_user }}:{{ gitlab_password }}@{{ gitlab_host }}/{{ gl_user }}/{{ dst_repo_name }}.git"
+                git push --mirror gitlab
+              '''
+            }
+          } // end stage Test
+
+        }
+      }

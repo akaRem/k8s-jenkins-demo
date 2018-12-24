@@ -1,0 +1,44 @@
+- job-template:
+    name: "test-connectivity-to-gl"
+    id: test-connectivity-to-gl
+    project-type: pipeline
+    description: Check Jenkins-to-GitLab connectivity
+    concurrent: true
+
+    dsl: !j2: |
+      // Jenkins-slave template
+      podTemplate(
+        label: 'dind',
+        containers: [
+          containerTemplate (
+            name: 'docker-dind',
+            image: 'docker:stable-dind',
+            privileged: true,
+            command: '',
+            args: ''
+          ),
+          containerTemplate(
+            name: 'curl',
+            image: 'appropriate/curl:latest',
+            ttyEnabled: true,
+            command: '/bin/sh -c',
+            args:
+              'cat',
+            envVars: [
+              containerEnvVar(
+                key: 'DOCKER_HOST', value: 'tcp://localhost:2375'
+              ),
+            ]
+          ),
+        ]
+      ) {
+        node('dind') {
+
+          stage('Check GL connectivity') {
+            container('curl') {
+              sh "curl -v -k {{ gitlab_url }}"
+            }
+          } // end stage Build
+
+        }
+      }

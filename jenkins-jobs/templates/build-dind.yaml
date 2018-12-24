@@ -11,6 +11,7 @@
     id: build-dind
     project-type: pipeline
     description: Build {verbose_name}
+    concurrent: true
 
     dsl: !j2: |
       // Jenkins-slave template
@@ -41,8 +42,13 @@
       ) {
         node('dind') {
 
+          stage('SSL workaround') {
+            sh "git config --global http.sslVerify false"
+          }
+
           stage('Build') {
-            git '{{ repo_url }}'
+            git credentialsId: "gl-root-login-passwd",
+                url: "https://{{ gitlab_host }}/{{ gl_space }}/{{ repo_name }}.git"
             container('docker-build') {
               sh "{{ build_command }}"
             }

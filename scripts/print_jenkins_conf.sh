@@ -1,10 +1,11 @@
 #!/bin/bash
-JENKINS_IP="$(minikube ip)"
-JENKINS_PORT="$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services jenkins-ci)"
+set -ex
+
+JENKINS_ADDRESS="jenkins.$(minikube ip).nip.io"
 
 echo "\
 [jenkins]
-url=http://$JENKINS_IP:$JENKINS_PORT
+url=http://$JENKINS_ADDRESS
 query_plugins_info=False
 
 [job_builder]
