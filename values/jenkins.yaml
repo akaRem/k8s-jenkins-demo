@@ -1,14 +1,19 @@
 # There are some workarounds used in this spec which are ok for demo purposes,
 # but should be changed in real world applications:
-# 1. ServiceType is NodePort
-# 2. Auth is not used
-# 3. Jenkins Image is consumed from cloud
+# 1. Auth is not used
+# 2. Jenkins Image is consumed from cloud
 Master:
 
-  # By default ServiceType is LoadBalancer and it won't work in minikube,
-  # So we replace with something that's supported by our cluster.
-  # This is not production option
-  ServiceType: NodePort
+  # By default ServiceType is LoadBalancer and it won't work in minikube.
+  # If we do not have ingress in k8s (minikube does not have it by default),
+  # `ServiceType: NodePort` should be used.
+  # But if we have enabled ingress, for ex. via addon, then following
+  # configuration will work.
+  ServiceType: ClusterIP
+  HostName: jenkins.192.168.99.100.nip.io
+  Ingress:
+    Annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
 
   # Latest Jenkins enforces high security, so even if we specify user/pass in
   # plaintext, we still won't be able to access API, because we'll need to
@@ -29,6 +34,7 @@ Master:
   - credentials-binding:1.16
   - git:3.9.1
   - workflow-job:2.23
+  - jobConfigHistory:2.19
 
 # Create service account and ClusterRoleBinding for Kubernetes plugin
 rbac:

@@ -1,15 +1,39 @@
 - project:
     name: demo
 
+    gitlab_host: gitlab.192.168.99.100.nip.io
+    gl_user: root
+    gitlab_password: !include-raw: '../tmp/vars/gl-password'
+    # TODO: Keys don't work because of some problems with ssh access
+    # ssh_key_priv: !include-raw: '../tmp/vars/id_rsa'
+    # ssh_key_pub: !include-raw: '../tmp/vars/id_rsa.pub'
+
     docker_image:
     - alpine-oraclejdk8:
         verbose_name: Java8 Container
-        repo_url: https://github.com/akaRem/docker-alpine-oraclejdk8
+        gl_space: root
+        repo_name: docker-alpine-oraclejdk8
         # note: double quotes are not allowed, because they are used in job-template
         build_command: >-
           docker build -t alpine-oraclejdk8 .
         test_command: >-
           docker run alpine-oraclejdk8 /bin/sh -c 'java -version'
 
+    project_name:
+    - docker-alpine-oraclejdk8:
+        verbose_name: Java8 Dockerfile project
+        src_repo_url: https://github.com/akaRem/docker-alpine-oraclejdk8
+        gl_space: root
+        dst_repo_name: 'docker-alpine-oraclejdk8'
+        password: !include-raw: '../tmp/vars/gl-password'
+
     jobs:
     - build-dind
+    - import-project
+
+- project:
+    name: helpers
+
+    jobs:
+    - test-connectivity-to-gl:
+        gitlab_url: https://gitlab.192.168.99.100.nip.io

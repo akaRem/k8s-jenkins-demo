@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 virtualenv venv
 # shellcheck disable=SC1091

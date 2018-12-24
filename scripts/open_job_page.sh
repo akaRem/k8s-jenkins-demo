@@ -1,4 +1,5 @@
 #!/bin/bash
+set -ex
 
 JENKINS_IP="$(minikube ip)"
 JENKINS_PORT="$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services jenkins-ci)"
