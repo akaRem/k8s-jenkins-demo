@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-JENKINS_ADDRESS="jenkins.$(minikube ip).nip.io"
+JENKINS_ADDRESS="jenkins.192.168.99.100.nip.io/"
 
 echo "\
 [jenkins]
