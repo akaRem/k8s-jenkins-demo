@@ -1,3 +1,5 @@
 venv
 jenkins-jobs/jenkins.conf
 /tmp
+/node_modules
+package-lock.json
